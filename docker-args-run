@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+source "$(dirname $0)/../common/functions"
+
+STDIN=$(cat); APP="$1"; IMAGE="dokku/$APP"
+LINK_FILE="$DOKKU_ROOT/$APP/LINK"
+
+if [[ -e "$LINK_FILE" ]]; then
+  links=""
+  while read line; do
+    [[ "$line" =~ ^#.*$ ]] && continue
+    line=$(echo $line | awk '{gsub(/^ +| +$/,"")} {print $0}')
+    links="$links --link $line:$line"
+  done < "$LINK_FILE"
+  echo "$STDIN $links"
+else
+  echo "$STDIN"
+fi
